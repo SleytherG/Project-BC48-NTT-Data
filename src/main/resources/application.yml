@@ -1,0 +1,15 @@
+server:
+  port: 9091
+
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/bankDB
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /swagger-doc/v3/api-docs
+  swagger-ui:
+    path: /swagger-doc/swagger-ui.html
