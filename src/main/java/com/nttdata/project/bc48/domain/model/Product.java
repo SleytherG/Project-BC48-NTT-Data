@@ -6,15 +6,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class Client {
+@Builder(toBuilder = true)
+public class Product {
 
     private String id;
-    private String firstName;
-    private String lastName;
-    private String documentType;
-    private String documentNumber;
-    private ClientType clientType;
+    private String productType;
+    private String idClient;
+    private String availableBalance;
+    private String[] holders;
+    private String[] signatories;
 }
+
+
+

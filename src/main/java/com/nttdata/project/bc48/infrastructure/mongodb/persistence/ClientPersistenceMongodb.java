@@ -15,7 +15,7 @@ import org.webjars.NotFoundException;
 @Repository
 public class ClientPersistenceMongodb implements ClientPersistence {
 
-    private ClientRepository clientRepository;
+    final private ClientRepository clientRepository;
 
     public ClientPersistenceMongodb(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
@@ -37,9 +37,9 @@ public class ClientPersistenceMongodb implements ClientPersistence {
     }
 
     @Override
-    public Maybe<Client> create(Client client) {
+    public Single<Client> create(Client client) {
         ClientEntity clientEntity = ClientEntity.toClientEntity(client);
-        return Maybe.fromSingle(clientRepository.save(clientEntity))
+        return clientRepository.save(clientEntity)
                 .map(ClientEntity::toClient);
     }
 
@@ -60,8 +60,6 @@ public class ClientPersistenceMongodb implements ClientPersistence {
         return clientRepository
                 .findById(clientId)
                 .switchIfEmpty(Maybe.error(new NotFoundException("Non existent client: " + clientId)))
-                .flatMap(clientEntity -> {
-                    return clientRepository.deleteById(clientEntity.getId()).andThen(Maybe.empty());
-                });
+                .flatMap(clientEntity -> clientRepository.deleteById(clientEntity.getId()).andThen(Maybe.empty()));
     }
 }

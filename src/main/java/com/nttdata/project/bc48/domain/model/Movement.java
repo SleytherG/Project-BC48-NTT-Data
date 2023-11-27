@@ -5,16 +5,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class Client {
+public class Movement {
 
     private String id;
-    private String firstName;
-    private String lastName;
-    private String documentType;
-    private String documentNumber;
-    private ClientType clientType;
+    private String idProduct;
+    private String amount;
+    private String description;
+    private MovementType movementType;
+    private String operationDate;
+    private String observation;
+
 }

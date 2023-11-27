@@ -6,6 +6,7 @@ import com.nttdata.project.bc48.infrastructure.mongodb.daos.ClientRepository;
 import com.nttdata.project.bc48.infrastructure.mongodb.entities.ClientEntity;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
@@ -23,7 +24,7 @@ public class ClientService {
         return clientPersistence.findAll();
     }
 
-    public Maybe<Client> create(Client client) {
+    public Single<Client> create(Client client) {
         return clientPersistence.create(client);
     }
 
