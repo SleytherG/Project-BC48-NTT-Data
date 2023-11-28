@@ -14,4 +14,10 @@ public class Constants {
     final public static String TARJETA_CREDITO = "Tarjeta de credito";
 
     final public static String CREACION_CUENTA_AHORRO = "Apertura de cuenta";
+
+    final public static String DEPOSIT_SUCCESSFULLY = "The deposit was made successfully";
+    final public static String WITHDRAWAL_SUCCESSFULLY = "The withdrawal was made successfully";
+    final public static String PAYMENT_SUCCESSFULLY = "The payment was made successfully";
+    final public static String CHARGE_CONSUMPTION_SUCCESSFUL = "The purchase was made successfully";
+    final public static String STATUS_OK = "OK";
 }

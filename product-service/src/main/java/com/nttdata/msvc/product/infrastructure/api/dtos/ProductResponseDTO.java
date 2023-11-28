@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder(builderMethodName = "productResponseDTOBuilder")
 public class ProductResponseDTO {
 
-    private String code;
     private String message;
     private String status;
 

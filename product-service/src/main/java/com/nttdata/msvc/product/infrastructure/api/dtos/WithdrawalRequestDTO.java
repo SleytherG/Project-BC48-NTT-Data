@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 public class WithdrawalRequestDTO {
 
     private String idOriginProduct;
-    private String idDestinationProduct;
     private String amount;
 }

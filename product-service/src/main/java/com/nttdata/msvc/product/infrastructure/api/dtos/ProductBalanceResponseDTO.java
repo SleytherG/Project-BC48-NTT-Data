@@ -14,8 +14,8 @@ public class ProductBalanceResponseDTO extends ProductResponseDTO {
     private String balanceAvailable;
 
 
-    public ProductBalanceResponseDTO(String code, String message, String status, String idProduct, String balanceAvailable) {
-        super(code, message, status);
+    public ProductBalanceResponseDTO( String message, String status, String idProduct, String balanceAvailable) {
+        super(message, status);
         this.idProduct = idProduct;
         this.balanceAvailable = balanceAvailable;
     }
