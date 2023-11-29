@@ -10,9 +10,9 @@ public enum ClientType {
     /**
      * Represents a personal client
      */
-    Personal,
+    PERSONAL,
     /**
      * Represents an enterprise client
      */
-    Enterprise
+    ENTERPRISE
 }

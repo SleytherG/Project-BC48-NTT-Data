@@ -5,9 +5,7 @@ import com.nttdata.msvc.client.domain.persistence.ClientPersistence;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.webjars.NotFoundException;
 
 
 @Service

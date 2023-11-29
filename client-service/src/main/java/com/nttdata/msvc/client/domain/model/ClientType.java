@@ -4,6 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum ClientType {
-    Personal,
-    Enterprise
+    PERSONAL,
+    ENTERPRISE
 }

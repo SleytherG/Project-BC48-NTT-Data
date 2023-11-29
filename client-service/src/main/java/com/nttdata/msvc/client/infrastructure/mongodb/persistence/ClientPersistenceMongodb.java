@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 @Repository
 public class ClientPersistenceMongodb implements ClientPersistence {
 
-    final private ClientRepository clientRepository;
+    private final ClientRepository clientRepository;
 
     public ClientPersistenceMongodb(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
@@ -50,7 +50,7 @@ public class ClientPersistenceMongodb implements ClientPersistence {
         return clientRepository
                 .findById(client.getId())
                 .switchIfEmpty(Maybe.error(new NotFoundException("Non existent client: " + client.getId())))
-                .flatMapSingle((clientEntity) -> {
+                .flatMapSingle(clientEntity -> {
                     BeanUtils.copyProperties(client, clientEntity);
                     return clientRepository.save(clientEntity);
                 })
@@ -63,23 +63,5 @@ public class ClientPersistenceMongodb implements ClientPersistence {
                 .findById(clientId)
                 .switchIfEmpty(Maybe.error(new NotFoundException("Non existent client: " + clientId)))
                 .flatMap(clientEntity -> clientRepository.deleteById(clientEntity.getId()).andThen(Maybe.empty()));
-    }
-
-    public static void main(String[] args) {
-        Stream<Integer> infinite = Stream.iterate(1, x -> x + 1);
-        System.out.println("Infinite 1");
-        infinite
-                .limit(5)
-                .filter(x -> x % 2 == 1)
-                .forEach(System.out::println);
-
-
-
-        Stream<Integer> infinite2 = Stream.iterate(1, x -> x + 1);
-        System.out.println("Infinite 2");
-        infinite2
-                .filter(x -> x % 2 == 1)
-                .limit(5)
-                .forEach(System.out::println);
     }
 }

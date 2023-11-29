@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum MovementType {
-    Deposit,
-    Pay,
-    Withdrawal
+    DEPOSIT,
+    PAY,
+    WITHDRAWAL
 }

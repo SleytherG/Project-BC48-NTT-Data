@@ -16,7 +16,7 @@ public class MovementResource {
     public static final String PRODUCT_ID = "/{productId}";
     public static final String PRODUCT = "/product";
 
-    final private MovementService movementService;
+    private final MovementService movementService;
 
     public MovementResource(MovementService movementService) {
         this.movementService = movementService;

@@ -1,7 +1,9 @@
 package com.nttdata.msvc.product.infrastructure.api.resources;
 
+import com.nttdata.msvc.product.domain.model.Movement;
 import com.nttdata.msvc.product.domain.model.Product;
 import com.nttdata.msvc.product.domain.services.ProductService;
+import com.nttdata.msvc.product.infrastructure.api.dtos.*;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
@@ -13,8 +15,14 @@ public class ProductResource {
 
     public static final String PRODUCTS = "/products";
     public static final String PRODUCT_ID = "/{productId}";
+    public static final String DEPOSIT_TO_PRODUCT = "/depositToProduct";
+    public static final String WITHDRAWAL_FROM_PRODUCT = "/withdrawalFromProduct";
+    public static final String PAY_CREDIT_PRODUCT = "/payCreditProduct";
+    public static final String CHARGE_CONSUMPTION_ACCORD_CREDIT_LINE = "/chargeConsumptionAccordCreditLine";
+    public static final String GET_AVAILABLE_BALANCE_PER_PRODUCT = "/getAvailableBalancePerProduct";
+    public static final String GET_MOVEMENTS_FROM_PRODUCT = "/getMovementsFromProduct";
 
-    final private ProductService productService;
+    private final ProductService productService;
 
     public ProductResource(ProductService productService) {
         this.productService = productService;
@@ -45,4 +53,33 @@ public class ProductResource {
         return productService.delete(productId);
     }
 
+    @PostMapping(DEPOSIT_TO_PRODUCT)
+    public Maybe<ProductResponseDTO> deposit(@RequestBody DepositRequestDTO depositRequestDTO) {
+        return productService.deposit(depositRequestDTO);
+    }
+
+    @PostMapping(WITHDRAWAL_FROM_PRODUCT)
+    public Maybe<ProductResponseDTO> withdrawal(@RequestBody WithdrawalRequestDTO withdrawalRequestDTO) {
+        return productService.withdrawal(withdrawalRequestDTO);
+    }
+
+    @PostMapping(PAY_CREDIT_PRODUCT)
+    public Maybe<ProductResponseDTO> payCreditProduct(@RequestBody PayCreditProductRequestDTO payCreditProductRequestDTO) {
+        return productService.payCreditProduct(payCreditProductRequestDTO);
+    }
+
+    @PostMapping(CHARGE_CONSUMPTION_ACCORD_CREDIT_LINE)
+    public Maybe<ProductResponseDTO> chargeConsumptionAccordCreditLine(@RequestBody ChargeConsumptionDTO chargeConsumptionDTO) {
+        return productService.chargeConsumptionAccordCreditLine(chargeConsumptionDTO);
+    }
+
+    @PostMapping(GET_AVAILABLE_BALANCE_PER_PRODUCT)
+    public Maybe<ProductBalanceResponseDTO> getAvailableBalancePerProduct(@RequestBody Product product) {
+        return productService.getAvailableBalancePerProduct(product);
+    }
+
+    @PostMapping(GET_MOVEMENTS_FROM_PRODUCT)
+    public Flowable<Movement> getMovementsFromProduct(@RequestBody Product product) {
+        return productService.getMovementsFromProduct(product);
+    }
 }

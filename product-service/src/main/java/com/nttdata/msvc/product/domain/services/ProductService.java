@@ -56,27 +56,27 @@ public class ProductService {
     }
 
     public final Maybe<ProductResponseDTO> deposit(final DepositRequestDTO depositRequestDTO) {
-        return null;
+        return persistenceProduct.deposit(depositRequestDTO);
     }
 
     public final Maybe<ProductResponseDTO> withdrawal(final WithdrawalRequestDTO withdrawalRequestDTO) {
-        return null;
+        return persistenceProduct.withdrawal(withdrawalRequestDTO);
     }
 
     public final Maybe<ProductResponseDTO> payCreditProduct(final PayCreditProductRequestDTO payCreditProductRequestDTO) {
-        return null;
+        return persistenceProduct.payCreditProduct(payCreditProductRequestDTO);
     }
 
     public final Maybe<ProductResponseDTO> chargeConsumptionAccordCreditLine(final ChargeConsumptionDTO chargeConsumptionDTO) {
-        return null;
+        return persistenceProduct.chargeConsumptionAccordCreditLine(chargeConsumptionDTO);
     }
 
     public final Maybe<ProductBalanceResponseDTO> getAvailableBalancePerProduct(final Product product) {
-        return null;
+        return persistenceProduct.getAvailableBalancePerProduct(product);
     }
 
-    public final Flowable<Movement> getMovementsFromProduct(final Movement movement) {
-        return null;
+    public final Flowable<Movement> getMovementsFromProduct(final Product product) {
+        return persistenceProduct.getMovementsFromProduct(product);
     }
 
 

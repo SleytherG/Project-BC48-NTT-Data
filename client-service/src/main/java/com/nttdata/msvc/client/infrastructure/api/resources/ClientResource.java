@@ -14,7 +14,7 @@ public class ClientResource {
     public static final String CLIENTS = "/clients";
     public static final String CLIENT_ID = "/{clientId}";
 
-    final private ClientService clientService;
+    private final ClientService clientService;
 
     public ClientResource(ClientService clientService) {
         this.clientService = clientService;

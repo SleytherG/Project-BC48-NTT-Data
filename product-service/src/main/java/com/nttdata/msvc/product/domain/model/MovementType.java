@@ -10,15 +10,15 @@ public enum MovementType {
     /**
      * Represents a deposit movement.
      */
-    Deposit,
+    DEPOSIT,
 
     /**
      * Represents a pay movement.
      */
-    Pay,
+    PAY,
 
     /**
      * Represents a withdrawal movement.
      */
-    Withdrawal
+    WITHDRAWAL
 }

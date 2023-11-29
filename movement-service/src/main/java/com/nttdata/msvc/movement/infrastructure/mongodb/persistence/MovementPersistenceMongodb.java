@@ -14,7 +14,9 @@ import org.webjars.NotFoundException;
 @Repository
 public class MovementPersistenceMongodb implements MovementPersistence {
 
-    final private MovementRepository movementRepository;
+    private static final String MOVEMENT_DOES_NOT_EXISTS = "Movement does not exists";
+    private static final String MOVEMENT_FIND_BY_ID_DOES_NOT_EXISTS = "Movement searched by ID product does not exist";
+    private final MovementRepository movementRepository;
 
     public MovementPersistenceMongodb(MovementRepository movementRepository) {
         this.movementRepository = movementRepository;
@@ -31,7 +33,7 @@ public class MovementPersistenceMongodb implements MovementPersistence {
     public Maybe<Movement> findById(String movementId) {
         return movementRepository
                 .findById(movementId)
-                .switchIfEmpty(Maybe.error(new NotFoundException("Movement does not exists")))
+                .switchIfEmpty(Maybe.error(new NotFoundException(MOVEMENT_DOES_NOT_EXISTS)))
                 .map(MovementEntity::toMovement);
     }
 
@@ -47,7 +49,7 @@ public class MovementPersistenceMongodb implements MovementPersistence {
     public Maybe<Movement> update(Movement movement) {
         return movementRepository
                 .findById(movement.getId())
-                .switchIfEmpty(Maybe.error(new NotFoundException("Movement does not exists")))
+                .switchIfEmpty(Maybe.error(new NotFoundException(MOVEMENT_DOES_NOT_EXISTS)))
                 .flatMapSingle(movementEntity -> {
                     BeanUtils.copyProperties(movement, movementEntity);
                     return movementRepository.save(movementEntity);
@@ -59,7 +61,7 @@ public class MovementPersistenceMongodb implements MovementPersistence {
     public Maybe<Void> delete(String movementId) {
         return movementRepository
                 .findById(movementId)
-                .switchIfEmpty(Maybe.error(new NotFoundException("Movement does not exists")))
+                .switchIfEmpty(Maybe.error(new NotFoundException(MOVEMENT_DOES_NOT_EXISTS)))
                 .flatMap(movementEntity -> movementRepository.deleteById(movementEntity.getId()).andThen(Maybe.empty()));
     }
 
@@ -67,7 +69,7 @@ public class MovementPersistenceMongodb implements MovementPersistence {
     public Maybe<Movement> findByProductId(String productId) {
         return movementRepository
                 .findByIdProduct(productId)
-                .switchIfEmpty(Maybe.error(new NotFoundException("Movement searched by ID product does not exist")))
+                .switchIfEmpty(Maybe.error(new NotFoundException(MOVEMENT_FIND_BY_ID_DOES_NOT_EXISTS)))
                 .map(MovementEntity::toMovement);
     }
 }

@@ -29,9 +29,9 @@ import static com.nttdata.msvc.product.utils.Constants.*;
 @Repository
 public class ProductPersistenceMongodb implements ProductPersistence {
 
-    final private ProductRepository productRepository;
-    final private WebClient.Builder webClientBuilder;
-    final private ClientRepository clientRepository;
+    private final ProductRepository productRepository;
+    private final WebClient.Builder webClientBuilder;
+    private final ClientRepository clientRepository;
 
     public ProductPersistenceMongodb(ProductRepository productRepository, ClientRepository clientRepository, WebClient.Builder webClientBuilder) {
         this.productRepository = productRepository;
@@ -70,7 +70,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
                     if (clientEntity.getClientType().equals(PERSONAL)) {
                         return createProductForPersonalClient(product, productsEntities);
                     } else if (clientEntity.getClientType().equals(ENTERPRISE)) {
-                        return createProductForEnterpriseClient(product, clientEntity);
+                        return createProductForEnterpriseClient(product);
                     } else {
                         return Maybe.error(new IllegalArgumentException("Invalid client type"));
                     }
@@ -86,12 +86,12 @@ public class ProductPersistenceMongodb implements ProductPersistence {
         }
     }
 
-    private Maybe<Product> createProductForEnterpriseClient(Product product, ClientEntity clientEntity) {
+    private Maybe<Product> createProductForEnterpriseClient(Product product) {
         return Single.just(product)
                 .map(p -> p.getProductType().toString().toUpperCase())
                 .filter(productType ->
-                        !(productType.equals(ProductType.Passive.getProducts()[0].toUpperCase()) ||
-                                productType.equals(ProductType.Passive.getProducts()[2].toUpperCase())))
+                        !(productType.equals(ProductType.PASSIVE.getProducts()[0].toUpperCase()) ||
+                                productType.equals(ProductType.PASSIVE.getProducts()[2].toUpperCase())))
                 .switchIfEmpty(Single.error(new ConflictException("Invalid product for enterprise client")))
                 .map(ignored -> ProductEntity.toProductEnterprise(product))
                 .flatMap(productEntity -> Single.fromCallable(() -> productRepository.save(productEntity)))
@@ -144,7 +144,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
                             emitter.onComplete();
                         },
                         // On error
-                        throwable -> emitter.onError(throwable)
+                        emitter::onError
                 );
             }
         });
@@ -166,7 +166,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
                             emitter.onSuccess(responseDTO);
                             emitter.onComplete();
                         },
-                        throwable -> emitter.onError(throwable)
+                        emitter::onError
                 );
             }
         });

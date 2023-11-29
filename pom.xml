@@ -23,9 +23,7 @@
 		<module>client-service</module>
 		<module>discovery-server</module>
 		<module>movement-service</module>
-		<module>discovery-server</module>
 		<module>product-service</module>
-<!--		<module>auth-service</module>-->
 	</modules>
 
 	<properties>
