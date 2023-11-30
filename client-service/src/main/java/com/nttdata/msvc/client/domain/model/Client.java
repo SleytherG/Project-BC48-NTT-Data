@@ -16,5 +16,6 @@ public class Client {
     private String lastName;
     private String documentType;
     private String documentNumber;
-    private ClientType clientType;
+    private String clientType;
+    private String clientTypeDescription;
 }

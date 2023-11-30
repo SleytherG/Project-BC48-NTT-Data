@@ -23,6 +23,7 @@ public class ClientEntity {
     private String documentType;
     private String documentNumber;
     private String clientType;
+    private String clientTypeDescription;
 
     public Client toClient() {
         Client client = new Client();

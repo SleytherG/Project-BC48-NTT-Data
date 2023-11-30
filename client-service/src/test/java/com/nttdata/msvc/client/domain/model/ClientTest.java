@@ -15,7 +15,7 @@ public class ClientTest {
                 .lastName("Doe")
                 .documentType("DNI")
                 .documentNumber("15859658")
-                .clientType(ClientType.PERSONAL)
+                .clientType("1")
                 .build();
 
         assertEquals("1", client.getId());
@@ -23,7 +23,7 @@ public class ClientTest {
         assertEquals("Doe", client.getLastName());
         assertEquals("DNI", client.getDocumentType());
         assertEquals("15859658", client.getDocumentNumber());
-        assertEquals(ClientType.PERSONAL, client.getClientType());
+        assertEquals(1, client.getClientType());
     }
 
     @Test
@@ -34,7 +34,7 @@ public class ClientTest {
                 .lastName("Doe")
                 .documentType("DNI")
                 .documentNumber("15859658")
-                .clientType(ClientType.PERSONAL)
+                .clientType("1")
                 .build();
 
         Client modifiedClient = originalClient.toBuilder()

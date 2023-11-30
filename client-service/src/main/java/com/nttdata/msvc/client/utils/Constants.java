@@ -1,4 +1,4 @@
-package com.nttdata.msvc.product.utils;
+package com.nttdata.msvc.client.utils;
 
 public class Constants {
 

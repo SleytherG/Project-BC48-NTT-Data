@@ -13,6 +13,7 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service class for handling product-related operations.
@@ -39,7 +40,8 @@ public class ProductService {
         return persistenceProduct.findAll();
     }
 
-    public final Single<Product> create(final Product product) {
+    @Transactional
+    public Single<Product> create(final Product product) {
         return persistenceProduct.create(product);
     }
 

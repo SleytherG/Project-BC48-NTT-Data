@@ -8,6 +8,7 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Interface for interacting with product persistence.
@@ -36,6 +37,7 @@ public interface ProductPersistence {
      * @param product The product to create.
      * @return Single containing the created product.
      */
+    @Transactional
     Single<Product> create(Product product);
 
     /**

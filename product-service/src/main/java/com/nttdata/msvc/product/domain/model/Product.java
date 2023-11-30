@@ -20,7 +20,13 @@ public class Product {
     private String id;
 
     /**
-     * Type of the product.
+     * Type of the product
+     * 1 => CUENTA DE AHORRO.
+     * 2 => CUENTA CORRIENTE.
+     * 3 => PLAZO FIJO
+     * 4 => CREDITO PERSONAL
+     * 5 => CREDITO EMPRESARIAL
+     * 6 => TARJETA DE CREDITO
      */
     private String productType;
 
@@ -43,6 +49,10 @@ public class Product {
      * Array of signatories associated with the product.
      */
     private String[] signatories;
+    /**
+     * Description of a product
+     */
+    private String productTypeDescription;
 }
 
 

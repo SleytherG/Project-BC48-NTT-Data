@@ -14,6 +14,8 @@ import org.webjars.NotFoundException;
 
 import java.util.stream.Stream;
 
+import static com.nttdata.msvc.client.utils.Constants.*;
+
 @Repository
 public class ClientPersistenceMongodb implements ClientPersistence {
 
@@ -41,6 +43,8 @@ public class ClientPersistenceMongodb implements ClientPersistence {
     @Override
     public Single<Client> create(Client client) {
         ClientEntity clientEntity = ClientEntity.toClientEntity(client);
+        if ( clientEntity.getClientType().equals(PERSONAL) ) clientEntity.setClientTypeDescription(PERSONAL_DESC);
+        if ( clientEntity.getClientType().equals(ENTERPRISE) ) clientEntity.setClientTypeDescription(ENTERPRISE_DESC);
         return clientRepository.save(clientEntity)
                 .map(ClientEntity::toClient);
     }
@@ -52,6 +56,8 @@ public class ClientPersistenceMongodb implements ClientPersistence {
                 .switchIfEmpty(Maybe.error(new NotFoundException("Non existent client: " + client.getId())))
                 .flatMapSingle(clientEntity -> {
                     BeanUtils.copyProperties(client, clientEntity);
+                    if (clientEntity.getClientType().equals(PERSONAL)) clientEntity.setClientTypeDescription(PERSONAL_DESC);
+                    if ( clientEntity.getClientType().equals(ENTERPRISE) ) clientEntity.setClientTypeDescription(ENTERPRISE_DESC);
                     return clientRepository.save(clientEntity);
                 })
                 .map(ClientEntity::toClient);

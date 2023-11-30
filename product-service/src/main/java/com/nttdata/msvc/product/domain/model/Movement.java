@@ -35,9 +35,9 @@ public class Movement {
     private String description;
 
     /**
-     * Type of the movement (e.g., deposit, pay, withdrawal).
+     * Type of the movement (e.g., deposit = 1, pay = 2, withdrawal = 3).
      */
-    private MovementType movementType;
+    private Integer movementType;
 
     /**
      * Date of the operation.

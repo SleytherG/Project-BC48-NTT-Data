@@ -35,7 +35,11 @@ public class Client {
      */
     private String documentNumber;
     /**
-     * Type of the client (e.g., personal, enterprise)
+     * Type of the client (e.g., personal = 1, enterprise = 2)
      */
-    private ClientType clientType;
+    private String clientType;
+    /**
+     * Description of the client
+     */
+    private String description;
 }
