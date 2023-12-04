@@ -6,8 +6,8 @@ public class Constants {
 
     public static final String PERSONAL = "1";
     public static final String ENTERPRISE = "2";
-    public static final String VIP = "3";
-    public static final String PYME = "4";
+    public static final String PERSONAL_VIP = "3";
+    public static final String ENTERPRISE_PYME = "4";
     public static final String PERSONAL_DESC = "PERSONAL";
     public static final String ENTERPRISE_DESC = "ENTERPRISE";
     // PASSIVE PRODUCTS
