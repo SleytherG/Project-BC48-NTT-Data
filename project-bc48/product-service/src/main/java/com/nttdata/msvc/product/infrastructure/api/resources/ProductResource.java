@@ -1,5 +1,6 @@
 package com.nttdata.msvc.product.infrastructure.api.resources;
 
+import com.nttdata.msvc.product.domain.model.Comission;
 import com.nttdata.msvc.product.domain.model.Movement;
 import com.nttdata.msvc.product.domain.model.Product;
 import com.nttdata.msvc.product.domain.services.ProductService;
@@ -23,6 +24,8 @@ public class ProductResource {
     public static final String GET_MOVEMENTS_FROM_PRODUCT = "/getMovementsFromProduct";
     public static final String CREATE_PERSONAL_PRODUCT = "/createPersonalProduct";
     public static final String CREATE_ENTERPRISE_PRODUCT = "/createEnterpriseProduct";
+    public static final String GET_ALL_AVAILABLE_BALANCES_FROM_PRODUCT = "/getAllAvailableBalancesFromProduct";
+    public static final String GET_ALL_COMISSIONS_OF_CLIENT_PRODUCT = "/getAllComissionsOfClientProduct";
 
     private final ProductService productService;
 
@@ -94,4 +97,15 @@ public class ProductResource {
     public Single<Product> createEnterpriseProduct(@RequestBody Product product) {
         return productService.createEnterpriseProduct(product);
     }
+
+    @PostMapping(value = GET_ALL_AVAILABLE_BALANCES_FROM_PRODUCT, produces = {"application/json"})
+    public Flowable<AvailableBalanceDTO> getAllAvailableBalances(@RequestBody AvailableBalanceDTO availableBalanceDTO) {
+        return productService.getAllAvailableBalances(availableBalanceDTO.getIdClient());
+    }
+
+    @PostMapping(value = GET_ALL_COMISSIONS_OF_CLIENT_PRODUCT, produces = {"application/json"})
+    public Flowable<Comission> getAllComissionsOfAClientProduct(@RequestBody Comission comission) {
+        return productService.getAllComissionsOfAClientProduct(comission);
+    }
+
 }

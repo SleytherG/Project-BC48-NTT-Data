@@ -55,6 +55,9 @@ public class Product {
      * Description of a product
      */
     private String productTypeDescription;
+
+    private String availableTransactionsWithoutCost = "20";
+
 }
 
 

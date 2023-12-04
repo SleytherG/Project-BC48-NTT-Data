@@ -27,6 +27,7 @@ public class ProductEntity {
     private List<String> holders;
     private List<String> signatories;
     private String productTypeDescription;
+    private String availableTransactions;
 
     public Product toProduct() {
         Product product = new Product();
