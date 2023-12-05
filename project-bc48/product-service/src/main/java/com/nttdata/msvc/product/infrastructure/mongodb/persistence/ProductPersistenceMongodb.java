@@ -2,23 +2,22 @@ package com.nttdata.msvc.product.infrastructure.mongodb.persistence;
 
 import com.nttdata.msvc.product.domain.exceptions.ConflictException;
 import com.nttdata.msvc.product.domain.exceptions.InsufficientFundsException;
-import com.nttdata.msvc.product.domain.exceptions.ProductAlreadyExistsException;
 
-import com.nttdata.msvc.product.domain.model.*;
+import com.nttdata.msvc.product.domain.model.Client;
+import com.nttdata.msvc.product.domain.model.Comission;
+import com.nttdata.msvc.product.domain.model.Movement;
+import com.nttdata.msvc.product.domain.model.Product;
 import com.nttdata.msvc.product.domain.persistence.ProductPersistence;
 import com.nttdata.msvc.product.infrastructure.api.dtos.*;
 import com.nttdata.msvc.product.infrastructure.mongodb.daos.ClientRepository;
 import com.nttdata.msvc.product.infrastructure.mongodb.daos.ComissionRepository;
 import com.nttdata.msvc.product.infrastructure.mongodb.daos.ProductRepository;
-import com.nttdata.msvc.product.infrastructure.mongodb.entities.ClientEntity;
 import com.nttdata.msvc.product.infrastructure.mongodb.entities.ProductEntity;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.*;
 import lombok.extern.slf4j.Slf4j;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,11 +25,7 @@ import org.webjars.NotFoundException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.Flow;
 
 import static com.nttdata.msvc.product.utils.Constants.*;
 
@@ -44,7 +39,11 @@ public class ProductPersistenceMongodb implements ProductPersistence {
   private final ClientRepository clientRepository;
   private final ComissionRepository comissionRepository;
 
-  public ProductPersistenceMongodb(ProductRepository productRepository, ClientRepository clientRepository, ComissionRepository comissionRepository, WebClient.Builder webClientBuilder) {
+  public ProductPersistenceMongodb(
+    ProductRepository productRepository,
+    ClientRepository clientRepository,
+    ComissionRepository comissionRepository,
+    WebClient.Builder webClientBuilder) {
     this.productRepository = productRepository;
     this.webClientBuilder = webClientBuilder;
     this.clientRepository = clientRepository;
@@ -71,7 +70,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
   public Single<Product> create(Product product) {
     ProductEntity productEntity = ProductEntity.toProductEntity(product);
     return productRepository.save(productEntity)
-      .map(productSaved -> ProductEntity.toProduct(productSaved));
+      .map(savedProduct -> ProductEntity.toProduct(savedProduct));
   }
 //    Flowable<ProductEntity> clientProducts = productRepository.findProductEntitiesByIdClient(product.getIdClient());
 //    Single<ClientEntity> clientFounded = Single.fromPublisher(webClientBuilder.build().get().uri("http://CLIENT-SERVICE/clients/" + product.getIdClient()).retrieve().bodyToMono(ClientEntity.class));
@@ -134,9 +133,13 @@ public class ProductPersistenceMongodb implements ProductPersistence {
     return Maybe.create(new MaybeOnSubscribe<ProductResponseDTO>() {
       @Override
       public void subscribe(@NonNull MaybeEmitter<ProductResponseDTO> emitter) throws Throwable {
-        Maybe<Product> originAccount = productRepository.findById(depositRequestDTO.getIdOriginProduct()).map(productEntity -> ProductEntity.toProduct(productEntity));
+        Maybe<Product> originAccount = productRepository
+          .findById(depositRequestDTO.getIdOriginProduct())
+          .map(productEntity -> ProductEntity.toProduct(productEntity));
 
-        Maybe<Product> destinationAccount = productRepository.findById(depositRequestDTO.getIdOriginProduct()).map(productEntity -> ProductEntity.toProduct(productEntity));
+        Maybe<Product> destinationAccount = productRepository
+          .findById(depositRequestDTO.getIdOriginProduct())
+          .map(productEntity -> ProductEntity.toProduct(productEntity));
 
         Maybe.zip(originAccount, destinationAccount, (origin, destination) -> {
 
@@ -162,10 +165,10 @@ public class ProductPersistenceMongodb implements ProductPersistence {
           double destinationNewAvailableBalance = Double.parseDouble(destination.getAvailableBalance()) + Double.parseDouble(depositRequestDTO.getAmount());
           destination.setAvailableBalance(String.valueOf(destinationNewAvailableBalance));
 
-          ProductEntity productOrigin = ProductEntity.toProductEntity(origin);
-          ProductEntity productDestination = ProductEntity.toProductEntity(destination);
-          productRepository.save(productOrigin);
-          productRepository.save(productDestination);
+          ProductEntity originEntity = ProductEntity.toProductEntity(origin);
+          ProductEntity destinatioEntity = ProductEntity.toProductEntity(destination);
+          productRepository.save(originEntity);
+          productRepository.save(destinatioEntity);
 
           return new ProductResponseDTO(DEPOSIT_SUCCESSFULLY, STATUS_OK);
         }).subscribe(
@@ -203,8 +206,8 @@ public class ProductPersistenceMongodb implements ProductPersistence {
             } else {
               origin.setAvailableBalance(String.valueOf(newAvailableBalance));
             }
-            ProductEntity productEntity = ProductEntity.toProductEntity(origin);
-            productRepository.save(productEntity);
+            ProductEntity originEntity = ProductEntity.toProductEntity(origin);
+            productRepository.save(originEntity);
             ProductResponseDTO responseDTO = new ProductResponseDTO(WITHDRAWAL_SUCCESSFULLY, STATUS_OK);
 
             emitter.onSuccess(responseDTO);
@@ -221,7 +224,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
     return Maybe.create(new MaybeOnSubscribe<ProductResponseDTO>() {
       @Override
       public void subscribe(@NonNull MaybeEmitter<ProductResponseDTO> emitter) throws Throwable {
-        Maybe<Product> originAccount = productRepository.findById(payCreditProductRequestDTO.getIdOriginProduct()).map(productEntity -> ProductEntity.toProduct(productEntity));
+        Maybe<ProductEntity> originAccount = productRepository.findById(payCreditProductRequestDTO.getIdOriginProduct());
         originAccount.subscribe(
           // On success
           origin -> {
@@ -251,8 +254,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
     return Maybe.create(new MaybeOnSubscribe<ProductResponseDTO>() {
       @Override
       public void subscribe(@NonNull MaybeEmitter<ProductResponseDTO> emitter) throws Throwable {
-        Maybe<Product> originAccount = productRepository.findById(chargeConsumptionDTO.getIdOriginProduct())
-          .map(productEntity -> ProductEntity.toProduct(productEntity));
+        Maybe<ProductEntity> originAccount = productRepository.findById(chargeConsumptionDTO.getIdOriginProduct());
 
         originAccount.subscribe(
           origin -> {
@@ -282,7 +284,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
     return Maybe.create(new MaybeOnSubscribe<ProductBalanceResponseDTO>() {
       @Override
       public void subscribe(@NonNull MaybeEmitter<ProductBalanceResponseDTO> emitter) throws Throwable {
-        Maybe<Product> productFounded = productRepository.findById(product.getId()).map(productEntity -> ProductEntity.toProduct(productEntity));
+        Maybe<ProductEntity> productFounded = productRepository.findById(product.getId());
         productFounded.subscribe(
           p -> {
             double availableBalance = Double.parseDouble(p.getAvailableBalance());
@@ -310,38 +312,40 @@ public class ProductPersistenceMongodb implements ProductPersistence {
   @Transactional
   public Single<Product> createPersonalProduct(Product product) {
     return productRepository
-      .findProductEntitiesByIdClient(product.getIdClient())
+      .findProductsByIdClient(product.getIdClient())
+      .doOnNext(productFlow -> log.warn(productFlow.getProductType()))
       .filter(productFiltered ->
         productFiltered.getProductType().equals(CUENTA_AHORRO) ||
           productFiltered.getProductType().equals(CUENTA_CORRIENTE) ||
           productFiltered.getProductType().equals(PLAZO_FIJO))
-      .doOnNext(productEntity -> validatePersonalClientAndProducts(productEntity, product))
-      .switchIfEmpty(saveProductAndMapToProductEntity(product).toFlowable())
-      .singleOrError()
-      .onErrorResumeNext(throwable -> {
-        if (throwable instanceof ConflictException) return Single.error(throwable);
-        else return Single.error(new ConflictException("The client type already has current type product"));
-      })
-      .map(productEntity -> ProductEntity.toProduct(productEntity));
+      .toList()
+      .flatMap(existingProducts -> {
+        if ( !existingProducts.isEmpty()) {
+          throw new ConflictException("The client already has the product type.");
+        } else {
+          return getClientSaveProductAndMapToProduct(product);
+        }
+      });
   }
 
-  private void validatePersonalClientAndProducts(ProductEntity productEntity, Product product) {
-    getClient(productEntity.getIdClient())
+  private void validatePersonalClientAndProducts(Product productFounded, Product product) {
+    getClientRequest(product.getIdClient())
       .map(client -> {
+        product.setClientType(client.getClientType().equals(PERSONAL) ? PERSONAL_DESC : ENTERPRISE_DESC);
         if (product.getProductType().equals(CUENTA_AHORRO) &&
           client.getClientType().equals(PERSONAL_VIP) &&
-          !productEntity.getProductType().equals(TARJETA_CREDITO)) {
+          !productFounded.getProductType().equals(TARJETA_CREDITO)) {
           return Single.error(new ConflictException("Personal Vip client has to have a Credit Card with the bank"));
         }
         if (product.getProductType().equals(CUENTA_AHORRO) &&
           client.getClientType().equals(PERSONAL_VIP) &&
-          Double.valueOf(productEntity.getAvailableBalance()) >= 500.00
+          Double.valueOf(productFounded.getAvailableBalance()) >= 500.00
         ) {
           return Single.error(new ConflictException("The save account hasn't enough founds"));
         }
         if (!client.getClientType().equals(PERSONAL))
           return Single.error(new ConflictException("The client type is not Personal"));
-        else return Single.just(productEntity);
+        else return Single.just(productFounded);
       })
       .onErrorResumeNext(throwable -> Single.error(new ConflictException("The client type is not Personal")));
   }
@@ -349,73 +353,93 @@ public class ProductPersistenceMongodb implements ProductPersistence {
   @Override
   public Single<Product> createEnterpriseProduct(Product product) {
     return productRepository
-      .findProductEntitiesByIdClient(product.getIdClient())
+      .findProductsByIdClient(product.getIdClient())
+      .doOnNext(productFlow -> log.warn(productFlow.getProductType()))
       .filter(productFiltered ->
         productFiltered.getProductType().equals(CUENTA_AHORRO) ||
           productFiltered.getProductType().equals(PLAZO_FIJO))
-      .doOnNext(productEntity -> validateEnterpriseClientAndProducts(productEntity, product))
-      .switchIfEmpty(saveProductAndMapToProductEntity(product).toFlowable())
-      .singleOrError()
-      .onErrorResumeNext(throwable -> {
-        if (throwable instanceof ConflictException) return Single.error(throwable);
-        else return Single.error(new ConflictException("The client type already has current type product"));
-      })
-      .map(productEntity -> ProductEntity.toProduct(productEntity));
+      .toList()
+      .flatMap(existingProducts -> {
+        if ( !existingProducts.isEmpty()) {
+          throw new ConflictException("The client already has the product type.");
+        } else {
+          return getClientSaveProductAndMapToProduct(product);
+        }
+      });
+
   }
 
   @Override
   public Flowable<AvailableBalanceDTO> getAllAvailableBalances(String idClient) {
     return productRepository
-      .findProductEntitiesByIdClient(idClient)
+      .findProductsByIdClient(idClient)
       .switchIfEmpty(Flowable.error(new NotFoundException("There are not products for this client")))
-      .flatMap(this::mapToAvailableBalanceDTO);
+      .flatMap(ProductPersistenceMongodb::mapToAvailableBalanceDTO);
   }
 
   @Override
-  public Flowable<Comission> getAllComissionsOfAClientProduct(Comission comission) {
+  public Flowable<Comission> getAllCommissionsOfAClientProduct(Comission comission) {
     return comissionRepository
       .getAllByIdClientAndIdProduct(comission.getIdClient(), comission.getIdProduct());
   }
 
-  private void validateEnterpriseClientAndProducts(ProductEntity productEntity, Product product) {
-    getClient(productEntity.getIdClient())
+  private void validateEnterpriseClientAndProducts(ProductEntity productFounded, ProductEntity product) {
+    getClientRequest(productFounded.getIdClient())
       .map(client -> {
         if (product.getProductType().equals(CUENTA_CORRIENTE) &&
           client.getClientType().equals(ENTERPRISE_PYME) &&
-          !productEntity.getProductType().equals(TARJETA_CREDITO)) {
+          !productFounded.getProductType().equals(TARJETA_CREDITO)) {
           return Single.error(new ConflictException("Enterprise PYME client has to have a Credit Card with the bank"));
         }
         if (!client.getClientType().equals(PERSONAL))
           return Single.error(new ConflictException("The client type is not Personal"));
-        else return Single.just(productEntity);
+        else return Single.just(productFounded);
       })
       .onErrorResumeNext(throwable -> Single.error(new ConflictException("The client type is not Personal")));
   }
 
-  private Single<ProductEntity> saveProductAndMapToProductEntity(Product product) {
-    ProductEntity productEntity = ProductEntity.toProductEntity(product);
-    if (product.getProductType().equals(CUENTA_AHORRO)) productEntity.setProductTypeDescription(CUENTA_AHORRO_DESC);
-    if (product.getProductType().equals(CUENTA_CORRIENTE))
-      productEntity.setProductTypeDescription(CUENTA_CORRIENTE_DESC);
-    if (product.getProductType().equals(PLAZO_FIJO)) productEntity.setProductTypeDescription(PLAZO_FIJO_DESC);
-    return productRepository.save(productEntity);
+  public Single<Product> getClientSaveProductAndMapToProduct(Product product) {
+    return Single.create(emitter -> {
+      getClientRequest(product.getIdClient())
+        .map(client -> {
+          product.setClientType(client.getClientType().equals(PERSONAL) ? PERSONAL_DESC : ENTERPRISE_DESC);
+          product.setProductTypeDescription(mapProductTypeToDescription(product.getProductType()));
+          emitter.onSuccess(product);
+          ProductEntity productEntity = ProductEntity.toProductEntity(product);
+          productRepository.save(productEntity);
+          return product;
+        }).subscribe();
+    });
   }
 
-  public Single<Client> getClient(String clientId) {
-    Mono<Client> clientFounded = webClientBuilder.build()
+  public Single<Client> getClientRequest(String clientId) {
+    Mono<Client> clientRequest = webClientBuilder.build()
       .get()
       .uri("http://CLIENT-SERVICE/clients/{clientId}", clientId)
       .retrieve()
       .bodyToMono(Client.class);
-    return Single.fromPublisher(clientFounded);
+    return Single.fromPublisher(clientRequest);
   }
 
-  public Flowable<AvailableBalanceDTO> mapToAvailableBalanceDTO(ProductEntity productEntity) {
+  private String mapProductTypeToDescription(String productType) {
+    switch (productType) {
+      case CUENTA_AHORRO:
+        return CUENTA_AHORRO_DESC;
+      case CUENTA_CORRIENTE:
+        return CUENTA_CORRIENTE_DESC;
+      case PLAZO_FIJO:
+        return PLAZO_FIJO_DESC;
+      default:
+        return null;
+    }
+  }
+
+  private static Flowable<AvailableBalanceDTO> mapToAvailableBalanceDTO(ProductEntity product) {
     AvailableBalanceDTO availableBalanceDTO = AvailableBalanceDTO
       .builder()
-      .availableBalance(productEntity.getAvailableBalance())
-      .productName(productEntity.getProductTypeDescription())
-      .idClient(productEntity.getIdClient())
+      .availableBalance(product.getAvailableBalance())
+      .productName(product.getProductTypeDescription())
+      .idClient(product.getIdClient())
       .build();
     return Flowable.just(availableBalanceDTO);
   }

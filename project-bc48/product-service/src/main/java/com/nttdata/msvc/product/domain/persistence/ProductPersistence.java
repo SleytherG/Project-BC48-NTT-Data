@@ -111,5 +111,5 @@ public interface ProductPersistence {
 
   Flowable<AvailableBalanceDTO> getAllAvailableBalances(String idClient);
 
-  Flowable<Comission> getAllComissionsOfAClientProduct(Comission comission);
+  Flowable<Comission> getAllCommissionsOfAClientProduct(Comission comission);
 }

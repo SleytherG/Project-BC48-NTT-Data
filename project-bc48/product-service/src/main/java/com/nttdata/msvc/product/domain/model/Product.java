@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
@@ -57,6 +58,8 @@ public class Product {
     private String productTypeDescription;
 
     private String availableTransactionsWithoutCost = "20";
+
+    private String clientType;
 
 }
 

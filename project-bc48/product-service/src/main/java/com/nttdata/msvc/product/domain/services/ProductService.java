@@ -91,7 +91,7 @@ public class ProductService {
     return persistenceProduct.getAllAvailableBalances(idClient);
   }
 
-  public Flowable<Comission> getAllComissionsOfAClientProduct(Comission comission) {
-    return persistenceProduct.getAllComissionsOfAClientProduct(comission);
+  public Flowable<Comission> getAllCommissionsOfAClientProduct(Comission comission) {
+    return persistenceProduct.getAllCommissionsOfAClientProduct(comission);
   }
 }

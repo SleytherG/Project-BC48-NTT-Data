@@ -1,8 +1,6 @@
 package com.nttdata.msvc.product.domain.model;
 
-import com.nttdata.msvc.product.infrastructure.mongodb.entities.ProductEntity;
 import lombok.*;
-import org.springframework.beans.BeanUtils;
 
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,6 +1,5 @@
 package com.nttdata.msvc.product.infrastructure.mongodb.entities;
 
-import com.nttdata.msvc.product.domain.model.Client;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,13 +23,13 @@ public class ClientEntity {
     private String documentNumber;
     private String clientType;
 
-    public Client toClient() {
-        Client client = new Client();
+    public com.nttdata.msvc.product.domain.model.Client toClient() {
+        com.nttdata.msvc.product.domain.model.Client client = new com.nttdata.msvc.product.domain.model.Client();
         BeanUtils.copyProperties(this, client);
         return client;
     }
 
-    public static ClientEntity toClientEntity(Client client) {
+    public static ClientEntity toClientEntity(com.nttdata.msvc.product.domain.model.Client client) {
         ClientEntity clientEntity = new ClientEntity();
         BeanUtils.copyProperties(client, clientEntity);
         return clientEntity;

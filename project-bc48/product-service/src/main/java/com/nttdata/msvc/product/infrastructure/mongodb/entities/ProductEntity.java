@@ -1,7 +1,5 @@
 package com.nttdata.msvc.product.infrastructure.mongodb.entities;
 
-import com.nttdata.msvc.product.domain.model.Product;
-import io.reactivex.rxjava3.core.Single;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,26 +26,27 @@ public class ProductEntity {
     private List<String> signatories;
     private String productTypeDescription;
     private String availableTransactions;
+    private String clientType;
 
-    public Product toProduct() {
-        Product product = new Product();
+    public com.nttdata.msvc.product.domain.model.Product toProduct() {
+        com.nttdata.msvc.product.domain.model.Product product = new com.nttdata.msvc.product.domain.model.Product();
         BeanUtils.copyProperties(this, product);
         return product;
     }
 
-    public static Product toProduct(ProductEntity productEntity) {
-        Product product = new Product();
+    public static com.nttdata.msvc.product.domain.model.Product toProduct(ProductEntity productEntity) {
+        com.nttdata.msvc.product.domain.model.Product product = new com.nttdata.msvc.product.domain.model.Product();
         BeanUtils.copyProperties(productEntity, product);
         return product;
     }
 
-    public static ProductEntity toProductEntity(Product product) {
+    public static ProductEntity toProductEntity(com.nttdata.msvc.product.domain.model.Product product) {
         ProductEntity productEntity = new ProductEntity();
         BeanUtils.copyProperties(product, productEntity);
         return productEntity;
     }
 
-    public static ProductEntity toProductPersonal(Product product) {
+    public static ProductEntity toProductPersonal(com.nttdata.msvc.product.domain.model.Product product) {
         ProductEntity productEntity = new ProductEntity();
         productEntity.setProductType(product.getProductType());
         productEntity.setIdClient(product.getIdClient());
@@ -55,7 +54,7 @@ public class ProductEntity {
         return productEntity;
     }
 
-    public static ProductEntity toProductEnterprise(Product product) {
+    public static ProductEntity toProductEnterprise(com.nttdata.msvc.product.domain.model.Product product) {
         ProductEntity productEntity = new ProductEntity();
         productEntity.setProductType(product.getProductType());
         productEntity.setIdClient(product.getIdClient());

@@ -25,7 +25,7 @@ public class ProductResource {
     public static final String CREATE_PERSONAL_PRODUCT = "/createPersonalProduct";
     public static final String CREATE_ENTERPRISE_PRODUCT = "/createEnterpriseProduct";
     public static final String GET_ALL_AVAILABLE_BALANCES_FROM_PRODUCT = "/getAllAvailableBalancesFromProduct";
-    public static final String GET_ALL_COMISSIONS_OF_CLIENT_PRODUCT = "/getAllComissionsOfClientProduct";
+    public static final String GET_ALL_COMMISSIONS_OF_CLIENT_PRODUCT = "/getAllCommissionsOfClientProduct";
 
     private final ProductService productService;
 
@@ -103,9 +103,9 @@ public class ProductResource {
         return productService.getAllAvailableBalances(availableBalanceDTO.getIdClient());
     }
 
-    @PostMapping(value = GET_ALL_COMISSIONS_OF_CLIENT_PRODUCT, produces = {"application/json"})
-    public Flowable<Comission> getAllComissionsOfAClientProduct(@RequestBody Comission comission) {
-        return productService.getAllComissionsOfAClientProduct(comission);
+    @PostMapping(value = GET_ALL_COMMISSIONS_OF_CLIENT_PRODUCT, produces = {"application/json"})
+    public Flowable<Comission> getAllCommissionsOfAClientProduct(@RequestBody Comission comission) {
+        return productService.getAllCommissionsOfAClientProduct(comission);
     }
 
 }
