@@ -311,21 +311,24 @@ public class ProductPersistenceMongodb implements ProductPersistence {
   @Override
   @Transactional
   public Single<Product> createPersonalProduct(Product product) {
-    return productRepository
-      .findProductsByIdClient(product.getIdClient())
-      .doOnNext(productFlow -> log.warn(productFlow.getProductType()))
-      .filter(productFiltered ->
-        productFiltered.getProductType().equals(CUENTA_AHORRO) ||
-          productFiltered.getProductType().equals(CUENTA_CORRIENTE) ||
-          productFiltered.getProductType().equals(PLAZO_FIJO))
-      .toList()
-      .flatMap(existingProducts -> {
-        if ( !existingProducts.isEmpty()) {
-          throw new ConflictException("The client already has the product type.");
-        } else {
-          return getClientSaveProductAndMapToProduct(product);
-        }
-      });
+    return null;
+    // TODO: UNCOMMENT AND FIX THE CODE
+//    return productRepository
+//      .findProductsByIdClient(product.getIdClient())
+//      .doOnNext(productFlow -> log.warn(productFlow.getProductType()))
+//      .filter(productFiltered ->
+//        productFiltered.getProductType().equals(CUENTA_AHORRO) ||
+//          productFiltered.getProductType().equals(CUENTA_CORRIENTE) ||
+//          productFiltered.getProductType().equals(PLAZO_FIJO))
+//      .toList()
+//      .flatMap((existingProducts) -> {
+//        if ( !existingProducts.isEmpty()) {
+//          throw new ConflictException("The client already has the product type.");
+//        }
+//        else if (validateEnterpriseClientAndProducts(existingProducts)) {
+//          return getClientSaveProductAndMapToProduct(product);
+//        }
+//      });
   }
 
   private void validatePersonalClientAndProducts(Product productFounded, Product product) {
@@ -383,20 +386,20 @@ public class ProductPersistenceMongodb implements ProductPersistence {
       .getAllByIdClientAndIdProduct(comission.getIdClient(), comission.getIdProduct());
   }
 
-  private void validateEnterpriseClientAndProducts(ProductEntity productFounded, ProductEntity product) {
-    getClientRequest(productFounded.getIdClient())
-      .map(client -> {
-        if (product.getProductType().equals(CUENTA_CORRIENTE) &&
-          client.getClientType().equals(ENTERPRISE_PYME) &&
-          !productFounded.getProductType().equals(TARJETA_CREDITO)) {
-          return Single.error(new ConflictException("Enterprise PYME client has to have a Credit Card with the bank"));
-        }
-        if (!client.getClientType().equals(PERSONAL))
-          return Single.error(new ConflictException("The client type is not Personal"));
-        else return Single.just(productFounded);
-      })
-      .onErrorResumeNext(throwable -> Single.error(new ConflictException("The client type is not Personal")));
-  }
+//  private void validateEnterpriseClientAndProducts(ProductEntity product) {
+//    getClientRequest(productFounded.getIdClient())
+//      .map(client -> {
+//        if (product.getProductType().equals(CUENTA_CORRIENTE) &&
+//          client.getClientType().equals(ENTERPRISE_PYME) &&
+//          !productFounded.getProductType().equals(TARJETA_CREDITO)) {
+//          return Single.error(new ConflictException("Enterprise PYME client has to have a Credit Card with the bank"));
+//        }
+//        if (!client.getClientType().equals(PERSONAL))
+//          return Single.error(new ConflictException("The client type is not Personal"));
+//        else return Single.just(productFounded);
+//      })
+//      .onErrorResumeNext(throwable -> Single.error(new ConflictException("The client type is not Personal")));
+//  }
 
   public Single<Product> getClientSaveProductAndMapToProduct(Product product) {
     return Single.create(emitter -> {

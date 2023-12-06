@@ -23,7 +23,7 @@ public class ClientTest {
         assertEquals("Doe", client.getLastName());
         assertEquals("DNI", client.getDocumentType());
         assertEquals("15859658", client.getDocumentNumber());
-        assertEquals(1, client.getClientType());
+        assertEquals("1", client.getClientType());
     }
 
     @Test
