@@ -2,9 +2,11 @@ package com.nttdata.msvc.product.domain.persistence;
 
 
 import com.nttdata.msvc.product.domain.model.Comission;
+import com.nttdata.msvc.product.domain.model.Debt;
 import com.nttdata.msvc.product.domain.model.Movement;
 import com.nttdata.msvc.product.domain.model.Product;
 import com.nttdata.msvc.product.infrastructure.api.dtos.*;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
@@ -112,4 +114,12 @@ public interface ProductPersistence {
   Flowable<AvailableBalanceDTO> getAllAvailableBalances(String idClient);
 
   Flowable<Comission> getAllCommissionsOfAClientProduct(Comission comission);
+
+  Flowable<Product> getAllProductsOfAClientWithClientId(String clientId);
+
+  Completable payServiceWithDebitCard(String clientId, String serviceId);
+
+  Single<ClientDebtResponseDTO> getAllDebtsFromClient(String clientId);
+
+  Completable associateSavingsAccountWithDebitCard(AssociateSavingAccountDTO associateSavingAccountDTO);
 }

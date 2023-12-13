@@ -30,6 +30,7 @@ public class Product {
      * 4 => CREDITO PERSONAL
      * 5 => CREDITO EMPRESARIAL
      * 6 => TARJETA DE CREDITO
+     * 7 => TARJETA DE DEBITO
      */
     private String productType;
 
@@ -60,6 +61,9 @@ public class Product {
     private String availableTransactionsWithoutCost = "20";
 
     private String clientType;
+
+    private List<Product> associatedAccount;
+
 
 }
 

@@ -21,9 +21,12 @@ public class Constants {
     public static final String CREDITO_PERSONAL = "4";
     public static final String CREDITO_EMPRESARIAL = "5";
     public static final String TARJETA_CREDITO = "6";
+    public static final String TARJETA_DEBITO = "7";
     public static final String CREDITO_PERSONAL_DESC = "CREDITO PERSONAL";
     public static final String CREDITO_EMPRESARIAL_DESC = "CREDITO EMPRESARIAL";
     public static final String TARJETA_CREDITO_DESC = "TARJETA DE CREDITO";
+    public static final String TARJETA_DEBITO_DESC = "TARJETA DE DEBITO";
+
 
     public static final String CREACION_CUENTA_AHORRO = "Apertura de cuenta";
 

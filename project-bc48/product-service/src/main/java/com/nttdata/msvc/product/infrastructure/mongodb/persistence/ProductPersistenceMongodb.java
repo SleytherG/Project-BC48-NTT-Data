@@ -3,21 +3,24 @@ package com.nttdata.msvc.product.infrastructure.mongodb.persistence;
 import com.nttdata.msvc.product.domain.exceptions.ConflictException;
 import com.nttdata.msvc.product.domain.exceptions.InsufficientFundsException;
 
-import com.nttdata.msvc.product.domain.model.Client;
-import com.nttdata.msvc.product.domain.model.Comission;
-import com.nttdata.msvc.product.domain.model.Movement;
-import com.nttdata.msvc.product.domain.model.Product;
+import com.nttdata.msvc.product.domain.mapper.AvailableBalanceMapper;
+import com.nttdata.msvc.product.domain.mapper.ClientMapper;
+import com.nttdata.msvc.product.domain.mapper.DebtMapper;
+import com.nttdata.msvc.product.domain.mapper.ProductMapper;
+import com.nttdata.msvc.product.domain.model.*;
 import com.nttdata.msvc.product.domain.persistence.ProductPersistence;
 import com.nttdata.msvc.product.infrastructure.api.dtos.*;
 import com.nttdata.msvc.product.infrastructure.mongodb.daos.ClientRepository;
 import com.nttdata.msvc.product.infrastructure.mongodb.daos.ComissionRepository;
+import com.nttdata.msvc.product.infrastructure.mongodb.daos.DebtRepository;
 import com.nttdata.msvc.product.infrastructure.mongodb.daos.ProductRepository;
+import com.nttdata.msvc.product.infrastructure.mongodb.entities.ClientEntity;
 import com.nttdata.msvc.product.infrastructure.mongodb.entities.ProductEntity;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,7 +28,11 @@ import org.webjars.NotFoundException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.nttdata.msvc.product.utils.Constants.*;
 
@@ -38,23 +45,38 @@ public class ProductPersistenceMongodb implements ProductPersistence {
   private final WebClient.Builder webClientBuilder;
   private final ClientRepository clientRepository;
   private final ComissionRepository comissionRepository;
+  private final DebtRepository debtRepository;
+  private final ProductMapper productMapper;
+  private final ClientMapper clientMapper;
+  private final DebtMapper debtMapper;
+  private final AvailableBalanceMapper availableBalanceMapper;
 
   public ProductPersistenceMongodb(
     ProductRepository productRepository,
+    WebClient.Builder webClientBuilder,
     ClientRepository clientRepository,
     ComissionRepository comissionRepository,
-    WebClient.Builder webClientBuilder) {
+    DebtRepository debtRepository,
+    ClientMapper clientMapper,
+    ProductMapper productMapper,
+    AvailableBalanceMapper availableBalanceMapper,
+    DebtMapper debtMapper) {
     this.productRepository = productRepository;
     this.webClientBuilder = webClientBuilder;
     this.clientRepository = clientRepository;
     this.comissionRepository = comissionRepository;
+    this.debtRepository = debtRepository;
+    this.productMapper = productMapper;
+    this.clientMapper = clientMapper;
+    this.debtMapper = debtMapper;
+    this.availableBalanceMapper = availableBalanceMapper;
   }
 
   @Override
   public Flowable<Product> findAll() {
     return productRepository
       .findAll()
-      .map(productEntity -> ProductEntity.toProduct(productEntity));
+      .map(this.productMapper::mapProductEntityToProduct);
   }
 
   @Override
@@ -62,7 +84,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
     return productRepository
       .findById(productId)
       .switchIfEmpty(Maybe.error(new NotFoundException("Product does not exist: " + productId)))
-      .map(productEntity -> ProductEntity.toProduct(productEntity));
+      .map(this.productMapper::mapProductEntityToProduct);
   }
 
   @Override
@@ -70,29 +92,8 @@ public class ProductPersistenceMongodb implements ProductPersistence {
   public Single<Product> create(Product product) {
     ProductEntity productEntity = ProductEntity.toProductEntity(product);
     return productRepository.save(productEntity)
-      .map(savedProduct -> ProductEntity.toProduct(savedProduct));
+      .map(this.productMapper::mapProductEntityToProduct);
   }
-//    Flowable<ProductEntity> clientProducts = productRepository.findProductEntitiesByIdClient(product.getIdClient());
-//    Single<ClientEntity> clientFounded = Single.fromPublisher(webClientBuilder.build().get().uri("http://CLIENT-SERVICE/clients/" + product.getIdClient()).retrieve().bodyToMono(ClientEntity.class));
-//    ProductEntity productEntity = ProductEntity.toProductEntity(product);
-//    return clientProducts
-//      .isEmpty()
-//      .flatMap(isEmpty -> {
-//        if (isEmpty) {
-//          return clientFounded
-//            .flatMap(clientMapped -> {
-//              String productType = productEntity.getProductType();
-//              if (getProductTypeDescriptions().containsKey(productType))
-//                productEntity.setProductTypeDescription(getProductTypeDescriptions().get(productType));
-//              if (clientMapped.getClientType().equals(ENTERPRISE) && (productType.equals(CUENTA_AHORRO) || productType.equals(PLAZO_FIJO))) {
-//                return Single.error(new ConflictException("This client type cannot have this kind of product"));
-//              }
-//              return productRepository.save(productEntity).map(productSaved -> ProductEntity.toProduct(productSaved));
-//            });
-//        } else {
-//          return Single.error(new RuntimeException("Not implemented method if clientProducts is not empty"));
-//        }
-//      });
 
   @Override
   public Maybe<Product> update(Product product) {
@@ -106,7 +107,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
           productEntity.setProductTypeDescription(getProductTypeDescriptions().get(productType));
         return productRepository.save(productEntity);
       })
-      .map(productEntity -> ProductEntity.toProduct(productEntity));
+      .map(this.productMapper::mapProductEntityToProduct);
   }
 
   private Map<String, String> getProductTypeDescriptions() {
@@ -311,30 +312,52 @@ public class ProductPersistenceMongodb implements ProductPersistence {
   @Override
   @Transactional
   public Single<Product> createPersonalProduct(Product product) {
-    return null;
-    // TODO: UNCOMMENT AND FIX THE CODE
-//    return productRepository
-//      .findProductsByIdClient(product.getIdClient())
-//      .doOnNext(productFlow -> log.warn(productFlow.getProductType()))
-//      .filter(productFiltered ->
-//        productFiltered.getProductType().equals(CUENTA_AHORRO) ||
-//          productFiltered.getProductType().equals(CUENTA_CORRIENTE) ||
-//          productFiltered.getProductType().equals(PLAZO_FIJO))
-//      .toList()
-//      .flatMap((existingProducts) -> {
-//        if ( !existingProducts.isEmpty()) {
-//          throw new ConflictException("The client already has the product type.");
-//        }
-//        else if (validateEnterpriseClientAndProducts(existingProducts)) {
-//          return getClientSaveProductAndMapToProduct(product);
-//        }
-//      });
+    return productRepository
+      .findProductEntitiesByIdClient(product.getIdClient())
+      .doOnNext(productFlow -> log.warn(productFlow.getProductType()))
+      .toList()
+      .observeOn(Schedulers.io())
+      .flatMap((existingProducts) -> {
+        List<Debt> debtsFromClient = debtRepository.getDebtEntitiesByClientId(product.getIdClient()).map(this.debtMapper::mapDebtEntityToDebt).toList().blockingGet();
+        if ( !debtsFromClient.isEmpty() ) {
+          return Single.error(new ConflictException("The client already has debts with the bank, cannot get more products"));
+        }
+        long savingAccountsFoundedSize = existingProducts.stream().filter(productFiltered -> productFiltered.getProductType().equals(CUENTA_AHORRO)).count();
+        long checkingAccountsFoundedSize = existingProducts.stream().filter(productFiltered -> productFiltered.getProductType().equals(CUENTA_CORRIENTE)).count();
+        long fixedTermsFoundedSize = existingProducts.stream().filter(productFiltered -> productFiltered.getProductType().equals(PLAZO_FIJO)).count();
+        List<ProductEntity> savingAccountsFounded = existingProducts.stream().filter(productFiltered -> productFiltered.getProductType().equals(CUENTA_AHORRO)).collect(Collectors.toList());
+        List<ProductEntity> checkingAccountsFounded = existingProducts.stream().filter(productFiltered -> productFiltered.getProductType().equals(CUENTA_CORRIENTE)).collect(Collectors.toList());
+        List<ProductEntity> fixedTermsFounded = existingProducts.stream().filter(productFiltered -> productFiltered.getProductType().equals(PLAZO_FIJO)).collect(Collectors.toList());
+
+        if ( !existingProducts.isEmpty() && savingAccountsFoundedSize > 1 ) {
+          return Single.error(new ConflictException("The client already has a savings account."));
+        } else  if ( !existingProducts.isEmpty() && checkingAccountsFoundedSize > 1 ) {
+          return Single.error(new ConflictException("The client already has a checking account."));
+        } else if ( !existingProducts.isEmpty() && fixedTermsFoundedSize > 1 ) {
+          return Single.error(new ConflictException("The client already has a fixed term product."));
+        } else {
+          if ( savingAccountsFoundedSize == 0) {
+            return validatePersonalClientAndProducts(this.productMapper.mapProductEntityToProduct(savingAccountsFounded.get(0)), product)
+              .flatMap(this::create);
+          }
+          if ( checkingAccountsFoundedSize == 0) {
+            return validatePersonalClientAndProducts(this.productMapper.mapProductEntityToProduct(checkingAccountsFounded.get(0)), product)
+              .flatMap(this::create);
+          }
+          if ( fixedTermsFoundedSize == 0) {
+            return validatePersonalClientAndProducts(this.productMapper.mapProductEntityToProduct(fixedTermsFounded.get(0)), product)
+              .flatMap(this::create);
+          }
+          return Single.error(new RuntimeException("Could not create a personal product"));
+        }
+      });
   }
 
-  private void validatePersonalClientAndProducts(Product productFounded, Product product) {
-    getClientRequest(product.getIdClient())
-      .map(client -> {
-        product.setClientType(client.getClientType().equals(PERSONAL) ? PERSONAL_DESC : ENTERPRISE_DESC);
+  private Single<Product> validatePersonalClientAndProducts(Product productFounded, Product product) {
+    return getClientRequest(product.getIdClient())
+      .flatMap(client -> {
+        product.setClientType(PERSONAL_DESC);
+//        product.setClientType(client.getClientType().equals(PERSONAL) ? PERSONAL_DESC : ENTERPRISE_DESC);
         if (product.getProductType().equals(CUENTA_AHORRO) &&
           client.getClientType().equals(PERSONAL_VIP) &&
           !productFounded.getProductType().equals(TARJETA_CREDITO)) {
@@ -344,11 +367,13 @@ public class ProductPersistenceMongodb implements ProductPersistence {
           client.getClientType().equals(PERSONAL_VIP) &&
           Double.valueOf(productFounded.getAvailableBalance()) >= 500.00
         ) {
-          return Single.error(new ConflictException("The save account hasn't enough founds"));
+          return Single.error(new ConflictException("The save account hasn't enough funds"));
         }
-        if (!client.getClientType().equals(PERSONAL))
+        if (!client.getClientType().equals(PERSONAL)) {
           return Single.error(new ConflictException("The client type is not Personal"));
-        else return Single.just(productFounded);
+        } else {
+          return Single.just(product);
+        }
       })
       .onErrorResumeNext(throwable -> Single.error(new ConflictException("The client type is not Personal")));
   }
@@ -356,28 +381,32 @@ public class ProductPersistenceMongodb implements ProductPersistence {
   @Override
   public Single<Product> createEnterpriseProduct(Product product) {
     return productRepository
-      .findProductsByIdClient(product.getIdClient())
+      .findProductEntitiesByIdClient(product.getIdClient())
       .doOnNext(productFlow -> log.warn(productFlow.getProductType()))
-      .filter(productFiltered ->
-        productFiltered.getProductType().equals(CUENTA_AHORRO) ||
-          productFiltered.getProductType().equals(PLAZO_FIJO))
       .toList()
       .flatMap(existingProducts -> {
-        if ( !existingProducts.isEmpty()) {
-          throw new ConflictException("The client already has the product type.");
+        List<Debt> debtsFromClient = debtRepository.getDebtEntitiesByClientId(product.getIdClient()).map(this.debtMapper::mapDebtEntityToDebt).toList().blockingGet();
+        if ( !debtsFromClient.isEmpty() ) {
+          return Single.error(new ConflictException("The client already has debts with the bank, cannot get more products"));
+        }
+        List<ProductEntity> fixedTermsFounded = existingProducts.stream().filter(productFiltered -> productFiltered.getProductType().equals(PLAZO_FIJO)).collect(Collectors.toList());
+        if ( product.getProductType().equals(CUENTA_AHORRO) ) {
+          return Single.error(new ConflictException("The client cannot open a saving account."));
+        } else  if ( product.getProductType().equals(PLAZO_FIJO) ) {
+          return Single.error(new ConflictException("The client cannot open a fixed term account."));
         } else {
-          return getClientSaveProductAndMapToProduct(product);
+          return validateEnterpriseClientAndProducts(this.productMapper.mapProductEntityToProduct(fixedTermsFounded.get(0)), product)
+            .flatMap(this::create);
         }
       });
-
   }
 
   @Override
   public Flowable<AvailableBalanceDTO> getAllAvailableBalances(String idClient) {
     return productRepository
-      .findProductsByIdClient(idClient)
+      .findProductEntitiesByIdClient(idClient)
       .switchIfEmpty(Flowable.error(new NotFoundException("There are not products for this client")))
-      .flatMap(ProductPersistenceMongodb::mapToAvailableBalanceDTO);
+      .flatMap(this.availableBalanceMapper::mapToAvailableBalanceDTO);
   }
 
   @Override
@@ -386,20 +415,70 @@ public class ProductPersistenceMongodb implements ProductPersistence {
       .getAllByIdClientAndIdProduct(comission.getIdClient(), comission.getIdProduct());
   }
 
-//  private void validateEnterpriseClientAndProducts(ProductEntity product) {
-//    getClientRequest(productFounded.getIdClient())
-//      .map(client -> {
-//        if (product.getProductType().equals(CUENTA_CORRIENTE) &&
-//          client.getClientType().equals(ENTERPRISE_PYME) &&
-//          !productFounded.getProductType().equals(TARJETA_CREDITO)) {
-//          return Single.error(new ConflictException("Enterprise PYME client has to have a Credit Card with the bank"));
-//        }
-//        if (!client.getClientType().equals(PERSONAL))
-//          return Single.error(new ConflictException("The client type is not Personal"));
-//        else return Single.just(productFounded);
-//      })
-//      .onErrorResumeNext(throwable -> Single.error(new ConflictException("The client type is not Personal")));
-//  }
+  @Override
+  public Flowable<Product> getAllProductsOfAClientWithClientId(String clientId) {
+    return productRepository
+      .findProductEntitiesByIdClient(clientId)
+      .map(this.productMapper::mapProductEntityToProduct);
+  }
+
+  @Override
+  public Completable payServiceWithDebitCard(String clientId, String serviceId) {
+    return null;
+//    return productRepository
+//      .findProductEntitiesByIdClient(clientId)
+//      .filter(product -> product.getProductType().equals(TARJETA_DEBITO))
+//      .onErrorResumeNext(throwable -> {
+//        return Completable.error(new RuntimeException("Error processing debit card payment", throwable)).toFlowable();
+//      });
+  }
+
+  @Override
+  public Single<ClientDebtResponseDTO> getAllDebtsFromClient(String clientId) {
+    return debtRepository
+      .getDebtEntitiesByClientId(clientId)
+      .toList()
+      .flatMap(debtEntities ->
+        clientRepository
+        .findById(clientId)
+        .flatMap(clientEntity -> {
+          Client client = clientMapper.mapClientEntityToClient(clientEntity);
+          List<Debt> debts = this.debtMapper.mapListDebtEntitiesToListDebt(debtEntities);
+          ClientDebtResponseDTO clientDebtResponseDTO = ClientDebtResponseDTO.mapClientAndDebtsToClientDebtResponseDTO(client, debts);
+          return Maybe.just(clientDebtResponseDTO);
+        })
+        .toSingle())
+      .cast(ClientDebtResponseDTO.class); // Ensure the correct type is returned
+  }
+
+  @Override
+  public Completable associateSavingsAccountWithDebitCard(AssociateSavingAccountDTO associateSavingAccountDTO) {
+    return Completable.fromMaybe(productRepository
+      .findById(associateSavingAccountDTO.getDebitCardProduct().getId())
+      .flatMap(debitCardProduct ->
+        productRepository
+        .findById(associateSavingAccountDTO.getAccountProduct().getId())
+        .map(accountProduct -> {
+          List<Product> accounts = Arrays.asList(this.productMapper.mapProductEntityToProduct(accountProduct));
+          debitCardProduct.setAssociatedAccount(accounts);
+          return debitCardProduct;
+        })));
+  }
+
+  private Single<Product> validateEnterpriseClientAndProducts(Product productFounded, Product product) {
+    return getClientRequest(productFounded.getIdClient())
+      .flatMap(client -> {
+        if (product.getProductType().equals(CUENTA_CORRIENTE) &&
+          client.getClientType().equals(ENTERPRISE_PYME) &&
+          !productFounded.getProductType().equals(TARJETA_CREDITO)) {
+          return Single.error(new ConflictException("Enterprise PYME client has to have a Credit Card with the bank"));
+        }
+        if (!client.getClientType().equals(PERSONAL))
+          return Single.error(new ConflictException("The client type is not Personal"));
+        else return Single.just(productFounded);
+      })
+      .onErrorResumeNext(throwable -> Single.error(new ConflictException("The client type is not Personal")));
+  }
 
   public Single<Product> getClientSaveProductAndMapToProduct(Product product) {
     return Single.create(emitter -> {
@@ -408,7 +487,7 @@ public class ProductPersistenceMongodb implements ProductPersistence {
           product.setClientType(client.getClientType().equals(PERSONAL) ? PERSONAL_DESC : ENTERPRISE_DESC);
           product.setProductTypeDescription(mapProductTypeToDescription(product.getProductType()));
           emitter.onSuccess(product);
-          ProductEntity productEntity = ProductEntity.toProductEntity(product);
+          ProductEntity productEntity = this.productMapper.mapProductToProductEntity(product);
           productRepository.save(productEntity);
           return product;
         }).subscribe();
@@ -437,13 +516,5 @@ public class ProductPersistenceMongodb implements ProductPersistence {
     }
   }
 
-  private static Flowable<AvailableBalanceDTO> mapToAvailableBalanceDTO(ProductEntity product) {
-    AvailableBalanceDTO availableBalanceDTO = AvailableBalanceDTO
-      .builder()
-      .availableBalance(product.getAvailableBalance())
-      .productName(product.getProductTypeDescription())
-      .idClient(product.getIdClient())
-      .build();
-    return Flowable.just(availableBalanceDTO);
-  }
+
 }

@@ -8,7 +8,7 @@ import org.springframework.data.repository.reactive.RxJava3CrudRepository;
 
 public interface ProductRepository extends RxJava3CrudRepository<ProductEntity, String> {
 
-    Flowable<ProductEntity> findProductsByIdClient(String idClient);
+    Flowable<ProductEntity> findProductEntitiesByIdClient(String idClient);
     Single<ProductEntity> findProductEntityByIdClient(String idClient);
 }
 

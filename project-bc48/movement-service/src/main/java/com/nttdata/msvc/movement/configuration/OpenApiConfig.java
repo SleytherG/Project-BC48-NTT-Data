@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
   info = @Info(
-    title = "Movement API",
+    title = "Movements API",
     version = "1.0",
-    description = "Documentation for endpoints of Movement API")
+    description = "Documentation for endpoints of Movements API")
 )
 public class OpenApiConfig {
 }

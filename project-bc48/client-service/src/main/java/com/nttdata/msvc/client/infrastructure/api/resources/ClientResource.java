@@ -5,6 +5,7 @@ import com.nttdata.msvc.client.domain.services.ClientService;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,9 +22,10 @@ public class ClientResource {
     }
 
     /**
-     * Get all Users from DB
+     * Get all clients from DB
      * @return Flowable<Client>
      */
+    @Operation(summary = "Get all clients from DB")
     @GetMapping(produces = {"application/json"})
     public Flowable<Client> findAll() {
         return clientService.findAll();
@@ -34,6 +36,7 @@ public class ClientResource {
      * Request Body Client Class
      * @return Maybe<Client>
      */
+    @Operation(summary = "Create a client and save it to DB")
     @PostMapping(produces = {"application/json"})
     public Single<Client> create(@RequestBody Client client) {
         return this.clientService.create(client);
@@ -44,6 +47,7 @@ public class ClientResource {
      * @return Maybe<Client>
      *
      */
+    @Operation(summary = "Update a client from DB")
     @PutMapping(produces = {"application/json"})
     public Maybe<Client> update(@RequestBody Client client) {
         return this.clientService.update(client);
@@ -55,6 +59,7 @@ public class ClientResource {
      * type String
      * @return Maybe<Client>
      */
+    @Operation(summary = "Find a client by ID from DB")
     @GetMapping(CLIENT_ID)
     public Maybe<Client> findById(@PathVariable String clientId) {
         return this.clientService.findById(clientId);
@@ -65,6 +70,7 @@ public class ClientResource {
      * Path variable clientId
      * @return Maybe<Void>
      */
+    @Operation(summary = "Delete a client by ID from DB")
     @DeleteMapping(CLIENT_ID)
     public Maybe<Void> delete(@PathVariable String clientId) {
         return this.clientService.delete(clientId);

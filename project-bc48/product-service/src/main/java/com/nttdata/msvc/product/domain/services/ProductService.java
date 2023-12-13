@@ -1,10 +1,12 @@
 package com.nttdata.msvc.product.domain.services;
 
 import com.nttdata.msvc.product.domain.model.Comission;
+import com.nttdata.msvc.product.domain.model.Debt;
 import com.nttdata.msvc.product.domain.model.Movement;
 import com.nttdata.msvc.product.domain.model.Product;
 import com.nttdata.msvc.product.domain.persistence.ProductPersistence;
 import com.nttdata.msvc.product.infrastructure.api.dtos.*;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
@@ -93,5 +95,21 @@ public class ProductService {
 
   public Flowable<Comission> getAllCommissionsOfAClientProduct(Comission comission) {
     return persistenceProduct.getAllCommissionsOfAClientProduct(comission);
+  }
+
+  public Flowable<Product> getAllProductsOfAClientWithClientId(String clientId) {
+    return persistenceProduct.getAllProductsOfAClientWithClientId(clientId);
+  }
+
+  public Completable payServiceWithDebitCard(String clientId, String serviceId) {
+    return persistenceProduct.payServiceWithDebitCard(clientId, serviceId);
+  }
+
+  public Single<ClientDebtResponseDTO> getAllDebtsFromClient(String clientId) {
+    return persistenceProduct.getAllDebtsFromClient(clientId);
+  }
+
+  public Completable associateSavingsAccountWithDebitCard(AssociateSavingAccountDTO associateSavingAccountDTO) {
+    return persistenceProduct.associateSavingsAccountWithDebitCard(associateSavingAccountDTO);
   }
 }

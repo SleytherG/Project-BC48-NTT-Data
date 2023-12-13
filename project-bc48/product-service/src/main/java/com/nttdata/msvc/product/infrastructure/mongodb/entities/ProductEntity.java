@@ -1,5 +1,6 @@
 package com.nttdata.msvc.product.infrastructure.mongodb.entities;
 
+import com.nttdata.msvc.product.domain.model.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class ProductEntity {
     private String productTypeDescription;
     private String availableTransactions;
     private String clientType;
+    private List<Product> associatedAccount;
 
     public com.nttdata.msvc.product.domain.model.Product toProduct() {
         com.nttdata.msvc.product.domain.model.Product product = new com.nttdata.msvc.product.domain.model.Product();

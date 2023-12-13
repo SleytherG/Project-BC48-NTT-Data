@@ -1,10 +1,12 @@
 package com.nttdata.msvc.product.infrastructure.api.resources;
 
 import com.nttdata.msvc.product.domain.model.Comission;
+import com.nttdata.msvc.product.domain.model.Debt;
 import com.nttdata.msvc.product.domain.model.Movement;
 import com.nttdata.msvc.product.domain.model.Product;
 import com.nttdata.msvc.product.domain.services.ProductService;
 import com.nttdata.msvc.product.infrastructure.api.dtos.*;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
@@ -16,6 +18,8 @@ public class ProductResource {
 
     public static final String PRODUCTS = "/products";
     public static final String PRODUCT_ID = "/{productId}";
+    public static final String CLIENT_ID = "/{clientId}";
+    public static final String SERVICE_ID = "/{serviceId}";
     public static final String DEPOSIT_TO_PRODUCT = "/depositToProduct";
     public static final String WITHDRAWAL_FROM_PRODUCT = "/withdrawalFromProduct";
     public static final String PAY_CREDIT_PRODUCT = "/payCreditProduct";
@@ -26,6 +30,10 @@ public class ProductResource {
     public static final String CREATE_ENTERPRISE_PRODUCT = "/createEnterpriseProduct";
     public static final String GET_ALL_AVAILABLE_BALANCES_FROM_PRODUCT = "/getAllAvailableBalancesFromProduct";
     public static final String GET_ALL_COMMISSIONS_OF_CLIENT_PRODUCT = "/getAllCommissionsOfClientProduct";
+    public static final String GET_ALL_PRODUCTS_FROM_CLIENT = "/getAllProductsFromClient";
+    public static final String PAY_SERVICE_WITH_DEBIT_CARD = "/payServiceWithDebitCard";
+    public static final String GET_ALL_DEBTS_FROM_CLIENT = "/getAllDebtsFromClient";
+    public static final String ASSOCIATE_SAVINGS_ACCOUNT_WITH_DEBIT_CARD = "/associateSavingsAccountWithDebitCard";
 
     private final ProductService productService;
 
@@ -106,6 +114,26 @@ public class ProductResource {
     @PostMapping(value = GET_ALL_COMMISSIONS_OF_CLIENT_PRODUCT, produces = {"application/json"})
     public Flowable<Comission> getAllCommissionsOfAClientProduct(@RequestBody Comission comission) {
         return productService.getAllCommissionsOfAClientProduct(comission);
+    }
+
+    @GetMapping(GET_ALL_PRODUCTS_FROM_CLIENT + CLIENT_ID)
+    public Flowable<Product> getAllProductsOfAClientWithClientId(@PathVariable String clientId) {
+        return productService.getAllProductsOfAClientWithClientId(clientId);
+    }
+
+    @PostMapping(CLIENT_ID + PAY_SERVICE_WITH_DEBIT_CARD + SERVICE_ID)
+    public Completable payServiceWithDebitCard(@PathVariable String clientId, @PathVariable String serviceId) {
+        return productService.payServiceWithDebitCard(clientId, serviceId);
+    }
+
+    @GetMapping(GET_ALL_DEBTS_FROM_CLIENT + CLIENT_ID)
+    public Single<ClientDebtResponseDTO> getAllDebtsFromClient(@PathVariable String clientId) {
+        return productService.getAllDebtsFromClient(clientId);
+    }
+
+    @PostMapping(ASSOCIATE_SAVINGS_ACCOUNT_WITH_DEBIT_CARD)
+    public Completable associateSavingsAccountWithDebitCard(@RequestBody AssociateSavingAccountDTO associateSavingAccountDTO) {
+        return productService.associateSavingsAccountWithDebitCard(associateSavingAccountDTO);
     }
 
 }
